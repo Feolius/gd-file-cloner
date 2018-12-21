@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "Google Drive files cloner",
+  "version": "0.0.1",
+
+  "description": "Simple Chrome extension for cloning Google Drive files. It's needed mostly for situations when working with shared folders and you need to change owner to yourself.",
+  "browser_action": {
+
+  },
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "oauth2": {
+    "client_id": "566991952673-bebi7gs1us51iednps7gnsspq314acna.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive"
+    ]
+  },
+  "permissions": [ "tabs", "storage", "identity" ,"http://*/*", "https://*/*" ],
+  "content_security_policy": "script-src 'self' https://*.google.com https://*.googleapis.com; object-src 'self'"
+}
