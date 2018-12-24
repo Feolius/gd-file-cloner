@@ -53,9 +53,28 @@
             border-bottom: solid 1px #E4E4E4;
             font-weight: bold;
         }
+
+        .spinner {
+            color: #337ab7;
+            font-size: 200%;
+            /*-animation: spin 2s infinite linear;*/
+            -webkit-animation: spin 1.5s infinite linear;
+        }
+
+        @-webkit-keyframes spin {
+            from { -webkit-transform: rotate(0deg);}
+            to { -webkit-transform: rotate(360deg);}
+        }
+
     </style>
 </head>
 <body>
+<div id="modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
 <div class="container">
     <div class="row">
         <div class="col-xs-6">
@@ -75,8 +94,9 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-xs-2 left-sidebar">
-            <button type="button" class="btn btn-success" disabled>Clone selected</button>
-            <button type="button" class="btn btn-danger" disabled>Uncheck all</button>
+            <button type="button" class="btn btn-primary btn-clone" disabled>
+                Clone selected
+            </button>
         </div>
         <div class="col-xs-8 files-grid">
             <div class="row files-grid-header">
