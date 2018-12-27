@@ -172,32 +172,32 @@ $(() => {
         function runCloneBtnClickHandler() {
             const modalContent = $('.modal-content');
             modalContent.empty();
-            modalContent.append(`<div class="modal-header"><span class="glyphicon glyphicon-refresh spinner"></span>Processing file</div>`);
             let copyRequestChain = Promise.resolve();
             const filesIdsSelected = filesGrid.getFileIdsSelected();
+            let i = 1;
             for (let fileId of filesIdsSelected) {
                 let file = files.get(fileId);
                 if (file.parents === undefined) {
                     console.log(file);
                 }
-                if (file.parents !== undefined && file.parents > 0) {
-                    // copyRequestChain = copyRequestChain.then(() => {
-                    //     return new Promise(resolve => {
-                    //         const request = gapi.client.request({
-                    //             'method': 'POST',
-                    //             'path': `/drive/v3/files/${fileId}/copy`,
-                    //             'params': {
-                    //                 'parents': files.get(fileId)
-                    //             }
-                    //         });
-                    //         request.execute((response) => {
-                    //             console.log(response)
-                    //             resolve();
-                    //         });
-                    //     });
-                    // });
+                if (file.parents !== undefined && file.parents.length > 0) {
+                    copyRequestChain = copyRequestChain.then(() => {
+                        return new Promise(resolve => {
+                            modalContent.html(`<div class="modal-header"><span class="glyphicon glyphicon-refresh spinner"></span>Processing file ${i} of ${filesIdsSelected.length}: <img src="${file.iconLink}"> ${file.name}</div>`);
+                            i++;
+                            const request = gapi.client.request({
+                                'method': 'POST',
+                                'path': `/drive/v3/files/${fileId}/copy`,
+                                'params': {
+                                }
+                            });
+                            request.execute((response) => {
+                                console.log(response)
+                                resolve();
+                            });
+                        });
+                    });
                 }
-
             }
             copyRequestChain.then(() => {
                 $('#modal').modal('hide');
