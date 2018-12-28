@@ -96,9 +96,9 @@ $(() => {
         const filesGrid = new FilesGrid($('.files-grid'));
         filesGrid.onSelectFileSubscribe((fileIds) => {
             if (fileIds.length > 0) {
-                $('.btn-clone').prop('disabled', false);
+                $('.btn-clone, .btn-remove').prop('disabled', false);
             } else {
-                $('.btn-clone').prop('disabled', true);
+                $('.btn-clone, .btn-remove').prop('disabled', true);
             }
         });
 
@@ -153,11 +153,9 @@ $(() => {
             searchHandler($('#search-box input').val())
         });
 
-
-
+        const modalContent = $('.modal-content');
 
         $('.btn-clone').click(() => {
-            const modalContent = $('.modal-content');
             modalContent.empty();
             modalContent.append(`<div class="modal-body">Are you sure that you want to clone ${filesGrid.getFileIdsSelected().length} files?</div>`);
             const modalFooter = $('<div class="modal-footer"></div>');
@@ -169,8 +167,20 @@ $(() => {
             $('#modal').modal();
         });
 
+        $('.btn-remove').click(() => {
+            modalContent.empty();
+            modalContent.append(`<div class="modal-body">Are you sure that you want to remove ${filesGrid.getFileIdsSelected().length} files?</div>`);
+            const modalFooter = $('<div class="modal-footer"></div>');
+            modalFooter.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+            const runCloneBtn = $('<button type="button" class="btn btn-primary">Remove</button>');
+            modalFooter.append(runCloneBtn);
+            modalContent.append(modalFooter);
+            runCloneBtn.click(runDeleteButtonClickHandler);
+            $('#modal').modal();
+
+        });
+
         function runCloneBtnClickHandler() {
-            const modalContent = $('.modal-content');
             modalContent.empty();
             let copyRequestChain = Promise.resolve();
             const filesIdsSelected = filesGrid.getFileIdsSelected();
@@ -183,12 +193,55 @@ $(() => {
                 if (file.parents !== undefined && file.parents.length > 0) {
                     copyRequestChain = copyRequestChain.then(() => {
                         return new Promise(resolve => {
-                            modalContent.html(`<div class="modal-header"><span class="glyphicon glyphicon-refresh spinner"></span>Processing file ${i} of ${filesIdsSelected.length}: <img src="${file.iconLink}"> ${file.name}</div>`);
+                            modalContent.html(`<div class="modal-header">
+<span class="glyphicon glyphicon-refresh spinner"></span>Processing file ${i} of ${filesIdsSelected.length}: 
+<img src="${file.iconLink}"> ${file.name}</div>`);
                             i++;
                             const request = gapi.client.request({
                                 'method': 'POST',
                                 'path': `/drive/v3/files/${fileId}/copy`,
                                 'params': {
+                                },
+                                'body': {
+                                    // Keep name exactly the same. This request adds "Copy" prefix to original file names for Native GD files.
+                                    'name': file.name
+                                }
+                            });
+                            request.execute((response) => {
+                                console.log(response)
+                                resolve();
+                            });
+                        });
+                    });
+                }
+            }
+            copyRequestChain.then(() => {
+                $('#modal').modal('hide');
+            });
+        }
+
+        function runDeleteButtonClickHandler() {
+            modalContent.empty();
+            let copyRequestChain = Promise.resolve();
+            const filesIdsSelected = filesGrid.getFileIdsSelected();
+            let i = 1;
+            for (let fileId of filesIdsSelected) {
+                let file = files.get(fileId);
+                if (file.parents === undefined) {
+                    console.log(file);
+                }
+                if (file.parents !== undefined && file.parents.length > 0) {
+                    copyRequestChain = copyRequestChain.then(() => {
+                        return new Promise(resolve => {
+                            modalContent.html(`<div class="modal-header">
+<span class="glyphicon glyphicon-refresh spinner"></span>Processing file ${i} of ${filesIdsSelected.length}: 
+<img src="${file.iconLink}"> ${file.name}</div>`);
+                            i++;
+                            const request = gapi.client.request({
+                                'method': 'PATCH',
+                                'path': `/drive/v3/files/${fileId}`,
+                                'params': {
+                                    'removeParents': file.parents
                                 }
                             });
                             request.execute((response) => {
